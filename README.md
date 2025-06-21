@@ -12,9 +12,7 @@ An Autohotkey Application to convert Excubes into Grinders, and sell grinders on
 
 2. **Download** the [latest release](https://github.com/Franca-Frying-Pan/Baked-Excubes/releases/), and **extract** the contents.
 
-3. **Position** yourself in front of Nysa _(Excube Exchanger)_ as shown in image below:
-
-![image](https://github.com/Franca-Fry-Pan/Baked-Excubes/assets/144707070/06bb5848-c546-433d-9523-816fcc35a819)
+3. **Position** yourself in front of Nysa _(Excube Exchanger)_ and open the shop.
 
 > Just make sure your selection is hovering over her
 
