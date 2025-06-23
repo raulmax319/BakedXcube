@@ -1,4 +1,5 @@
 #Requires AutoHotkey v2.0
+#Include Debugger.ahk
 #Include BreakMessage.ahk
 #Include BuyGrinders.ahk
 
@@ -11,15 +12,16 @@ Sleep(100)
 if (programid.Length > 0) {
     targetWindow := programid[1]
     WinActivate(targetWindow)
+    Debugger.Log("Application Started.")
     Sleep(1000)
 } else {
-    MsgBox("PSO2 not found. Exiting...")
+    Debugger.Log("Could not find PSO2. Exiting.")
     Sleep(5000)
     ExitApp()
 }
 
 controllerState := GrindersBuyer(targetWindow)
-breakMsg := controllerState.BuyGrinders()
+breakMsg := controllerState.Start()
 
 if (breakMsg.status == SHOP_BUTTON_STATUS) {
     MsgBox(breakMsg.message)
