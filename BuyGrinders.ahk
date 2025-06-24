@@ -45,14 +45,6 @@ class GrindersBuyer {
       return this._FindImage("*100 assets\close-button.png")
     }
 
-    _FindStorageMenu() {
-      return this._FindImage("*100 assets\storage-menu.png")
-    }
-
-    _FindMaterialStorageMenu() {
-      this._FindImage("*100 assets\material-storage-menu.png")
-    }
-
     _CheckExcubeAmountState() {
       return this._FindExcubeAmount() ; TODO: find the reason of the error and retry if possible
     }
@@ -60,20 +52,17 @@ class GrindersBuyer {
     _CheckShopState() {
       grinder := this._FindGrinderIcon()
 
-      if (not grinder["exists"]) {
-        return grinder
+      while(not grinder["exists"]) {
+        grinder := this._FindGrinderIcon()
       }
 
       selection := this._FindPurchaseAmountSelection()
 
       if (not selection["exists"]) {
-        return selection
+        return selection["error"]
       }
 
-      return Map(
-          "exists", true,
-          "error", ""
-        )
+      return 1
     }
 
     ; Actual execution
@@ -81,13 +70,13 @@ class GrindersBuyer {
     _EnterShop() {
       menu := this._FindImage("*100 assets\shop-menu.png")
 
-      if (menu["exists"]) {
-        this._ExecuteWithDelay([
-          ["{ENTER}", "Short"] ; Enter the Excube shop
-        ])
+      if (not menu["exists"]) {
+        return menu["error"]
       }
 
-      return menu
+      this._ExecuteWithDelay([
+        ["{ENTER}", "Short"] ; Enter the Excube shop
+      ])
     }
 
     _SelectMaximumGrinderAmount() {
@@ -141,34 +130,25 @@ class GrindersBuyer {
     ; Kinda mechanic method without much image search
     ; But its just menu swap so it works
     _GoToStorageMenu() {
-      storage := this._FindStorageMenu()
-
-      if (not storage["exists"]) {
-        return storage["error"]
-      }
-
       this._ExecuteWithDelay([
+        ; Select the storage menu
         ["{Up}", "Short"],
         ["{Up}", "Short"],
+        ["{ENTER}", "Long"],
+        ; Select the Material storage menu
+        ["{Down}", "Short"],
+        ["{Down}", "Short"],
         ["{ENTER}", "Long"]
       ])
-      
-      materialStorage := this._FindMaterialStorageMenu()
 
-      if (not materialStorage["exists"]) {
-        return materialStorage["error"]
-      }
-
-      ; Bulk send to material storage
       this._ExecuteWithDelay([
-        ["{Down}", "Short"],
-        ["{Down}", "Short"],
-        ["{ENTER}", "Long"],
+        ; Select yes at the confirmation box
         ["{Left}", "Short"],
         ["{ENTER}", "Short"],
+        ; Go Back to the menu shop and restart the loop
         ["{Esc}", "Long"],
         ["{Down}", "Short"],
-        ["{Down}", "Short"] ; Go back to shop menu
+        ["{Down}", "Short"]
       ])
     }
 
@@ -180,13 +160,18 @@ class GrindersBuyer {
       foundY := 0
       found := 0
       error := ""
+      attempt := 0
 
-      while(not found) {
+      while(not found && attempt <= 3) {
         found := this._KeepTrying(&foundX, &foundY, image)
-        SetTimer(() => {}, 500)
+        this._ShortRandomSleep()
+        Debugger.Log("Attempt number: `n" attempt)
+        attempt++
       }
 
-      Debugger.Log("Found image at X: " foundX ", Y: " foundY)
+      if (attempt > 3) {
+        error := BreakMessage(IMAGE_SEARCH, "Cannot find image. Reason: Timed out")
+      }
 
       return Map(
         "x", foundX,
@@ -226,25 +211,32 @@ class GrindersBuyer {
     _RunLoop() {
       error := ""
       while (1) {
-        shop := this._EnterShop()
+        shopMenuState := this._EnterShop()
 
-        if(not shop["exists"]) {
-          error := shop["error"]
-          break
+        if(shopMenuState is BreakMessage) {
+          return shopMenuState
         }
         
-        state := this._CheckShopState()
+        shopState := this._CheckShopState()
 
-        if(not state["exists"]) {
-          error := state["error"]
-          break
+        if(shopState is BreakMessage) {
+          return shopState
         }
 
-        this._BuyGrinder()
-        this._CloseShopAndGoBackToMenu()
+        buyState := this._BuyGrinder()
+
+        if (buyState is BreakMessage) {
+          return buyState
+        }
+
+        closeState := this._CloseShopAndGoBackToMenu()
+
+        if(closeState is BreakMessage) {
+          return closeState
+        }
+
         this._LongRandomSleep()
         this._GoToStorageMenu()
-        break
       }
 
       return error
