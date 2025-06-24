@@ -8,8 +8,8 @@ class Debugger {
     timestamp := FormatTime(, "yyyy-MM-dd HH:mm:ss")
     logEntry := "[" timestamp "] " message
 
-    ToolTip(logEntry)
-    SetTimer(() => ToolTip(), -Debugger.tooltipDuration)
+    ; ToolTip(logEntry)
+    ; SetTimer(() => ToolTip(), -Debugger.tooltipDuration)
 
     if !DirExist(Debugger.path) {
       DirCreate(Debugger.path)
