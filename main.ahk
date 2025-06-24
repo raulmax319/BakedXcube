@@ -23,15 +23,10 @@ if (programid.Length > 0) {
 controllerState := GrindersBuyer(targetWindow)
 breakMsg := controllerState.Start()
 
-if (breakMsg.status == SHOP_BUTTON_STATUS) {
-    MsgBox(breakMsg.message)
-    ExitApp()
-}
-
-if (breakMsg.status == GRINDERS_PURCHASE_STATUS) {
-    MsgBox(breakMsg.message)
-    ; TODO: Blind path navigate to shop to sell all grinders.
-    ; Then check if the player still has enough excubes to buy grinders...
+if (breakMsg) {
+  MsgBox(breakMsg.message)
+} else {
+  MsgBox("Tudo aconteceu corretamente.")
 }
 
 ExitApp()
