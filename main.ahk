@@ -23,7 +23,7 @@ if (programid.Length > 0) {
 controllerState := GrindersBuyer(targetWindow)
 breakMsg := controllerState.Start()
 
-if (breakMsg) {
+if (breakMsg is BreakMessage) {
   MsgBox(breakMsg.message)
 } else {
   MsgBox("Tudo aconteceu corretamente.")
