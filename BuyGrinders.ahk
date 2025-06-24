@@ -16,15 +16,9 @@ class GrindersBuyer {
       Sleep(randomTime)
     }
 
-    _EnterShop() {
-      menu := this._FindImage("*100 assets\shop-menu.png")
-
-      if (menu["exists"]) {
-        this._Execute("{ENTER}") ; Enter the Excube shop
-        this._ShortRandomSleep()
-      }
-
-      return menu
+    _LongRandomSleep() {
+      randomTime := Random(525, 1000)
+      Sleep(randomTime)
     }
 
     _FindGrinderIcon() {
@@ -51,15 +45,56 @@ class GrindersBuyer {
       return this._FindImage("*100 assets\close-button.png")
     }
 
+    _FindStorageMenu() {
+      return this._FindImage("*100 assets\storage-menu.png")
+    }
+
+    _FindMaterialStorageMenu() {
+      this._FindImage("*100 assets\material-storage-menu.png")
+    }
+
+    _CheckExcubeAmountState() {
+      return this._FindExcubeAmount() ; TODO: find the reason of the error and retry if possible
+    }
+
+    _CheckShopState() {
+      grinder := this._FindGrinderIcon()
+
+      if (not grinder["exists"]) {
+        return grinder
+      }
+
+      selection := this._FindPurchaseAmountSelection()
+
+      if (not selection["exists"]) {
+        return selection
+      }
+
+      return Map(
+          "exists", true,
+          "error", ""
+        )
+    }
+
+    ; Actual execution
+    ;
+    _EnterShop() {
+      menu := this._FindImage("*100 assets\shop-menu.png")
+
+      if (menu["exists"]) {
+        this._ExecuteWithDelay([
+          ["{ENTER}", "Short"] ; Enter the Excube shop
+        ])
+      }
+
+      return menu
+    }
+
     _SelectMaximumGrinderAmount() {
       this._Execute("{left}")
       this._ShortRandomSleep()
 
       return this._FindPurchaseAmount()
-    }
-
-    _CheckExcubeAmountState() {
-      return this._FindExcubeAmount() ; TODO: find the reason of the error and retry if possible
     }
 
     _BuyGrinder() {
@@ -75,8 +110,9 @@ class GrindersBuyer {
         return excubeAmount["error"]
       }
 
-      this._Execute("{ENTER}") ; Enter the purchase confirmation box
-      this._ShortRandomSleep()
+      this._ExecuteWithDelay([
+        ["{ENTER}", "Short"] ; Enter the purchase confirmation box
+      ])
 
       button := this._FindConfirmationButton()
 
@@ -84,8 +120,9 @@ class GrindersBuyer {
         return button["error"]
       }
 
-      this._Execute("{ENTER}") ; Confirm purchase
-      this._ShortRandomSleep()
+      this._ExecuteWithDelay([
+        ["{ENTER}", "Short"] ; Confirm Purchase
+      ])
     }
 
     _CloseShopAndGoBackToMenu() {
@@ -95,37 +132,49 @@ class GrindersBuyer {
         return button["error"]
       }
 
-      this._Execute("{ENTER}") ; Close purchase completion box
-      this._ShortRandomSleep()
-      this._Execute("{Esc}") ; Go Back to the menu list
-      this._ShortRandomSleep()
+      this._ExecuteWithDelay([
+        ["{ENTER}", "Short"],
+        ["{Esc}", "Short"],
+      ])
     }
 
-    _CheckShopState() {
-      grinder := this._FindGrinderIcon()
+    ; Kinda mechanic method without much image search
+    ; But its just menu swap so it works
+    _GoToStorageMenu() {
+      storage := this._FindStorageMenu()
 
-      if (not grinder["exists"]) {
-        return Map(
-          "exists", grinder["exists"],
-          "error", grinder["error"]
-        )
+      if (not storage["exists"]) {
+        return storage["error"]
       }
 
-      selection := this._FindPurchaseAmountSelection()
+      this._ExecuteWithDelay([
+        ["{Up}", "Short"],
+        ["{Up}", "Short"],
+        ["{ENTER}", "Long"]
+      ])
+      
+      materialStorage := this._FindMaterialStorageMenu()
 
-      if (not selection["exists"]) {
-        return Map(
-          "exists", selection["exists"],
-          "error", selection["error"]
-        )
+      if (not materialStorage["exists"]) {
+        return materialStorage["error"]
       }
 
-      return Map(
-          "exists", true,
-          "error", ""
-        )
+      ; Bulk send to material storage
+      this._ExecuteWithDelay([
+        ["{Down}", "Short"],
+        ["{Down}", "Short"],
+        ["{ENTER}", "Long"],
+        ["{Left}", "Short"],
+        ["{ENTER}", "Short"],
+        ["{Esc}", "Long"],
+        ["{Down}", "Short"],
+        ["{Down}", "Short"] ; Go back to shop menu
+      ])
     }
 
+
+    ; Utils
+    ;
     _FindImage(image) {
       foundX := 0
       foundY := 0
@@ -163,6 +212,17 @@ class GrindersBuyer {
       ControlSend(action, this.targetWindow)
     }
 
+    _ExecuteWithDelay(actions) {
+      for index, pair in actions {
+        ControlSend(pair[1], this.targetWindow)
+        if (pair[2] == "Short") {
+          this._ShortRandomSleep()
+        } else {
+          this._LongRandomSleep()
+        }
+      }
+    }
+
     _RunLoop() {
       error := ""
       while (1) {
@@ -182,6 +242,8 @@ class GrindersBuyer {
 
         this._BuyGrinder()
         this._CloseShopAndGoBackToMenu()
+        this._LongRandomSleep()
+        this._GoToStorageMenu()
         break
       }
 
