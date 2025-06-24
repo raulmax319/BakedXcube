@@ -4,19 +4,16 @@
 #Include BuyGrinders.ahk
 
 programName := "PHANTASY STAR ONLINE 2 NEW GENESIS"
-programid := WinGetList(programName)
-targetWindow := 0
+windows := WinGetList(programName)
 
-Sleep(100)
-; Find and focus on window
-if (programid.Length > 0) {
-    targetWindow := programid[1]
+if (windows.Length > 0) {
+    targetWindow := windows[1]
     WinActivate(targetWindow)
     Debugger.Log("Application Started.")
     Sleep(1000)
 } else {
-    Debugger.Log("Could not find PSO2. Exiting.")
-    Sleep(5000)
+    MsgBox("PSO2 not found. Exiting...")
+    Sleep(3000)
     ExitApp()
 }
 
