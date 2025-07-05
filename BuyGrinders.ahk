@@ -1,10 +1,7 @@
 #Requires AutoHotkey v2.0
 #Include BreakMessage.ahk
 #Include Debugger.ahk
-
-SHOP_BUTTON_STATUS := "SHOP BUTTON"
-GRINDERS_PURCHASE_STATUS := "GRINDERS PURCHASE"
-IMAGE_SEARCH := "IMAGE SEARCH"
+#Include ErrorType.ahk
 
 class GrindersBuyer {
     __New(targetWindow) {
@@ -22,27 +19,27 @@ class GrindersBuyer {
     }
 
     _FindGrinderIcon() {
-      return this._FindImage("*100 assets\grinder.png")
+      return this._FindImage("*100 assets\grinder.png", GRINDER_ICON)
     }
 
     _FindPurchaseAmountSelection() {
-      return this._FindImage("*100 assets\purchase-selection.png")
+      return this._FindImage("*100 assets\purchase-selection.png", GRINDERS_PURCHASE_STATUS)
     }
 
     _FindPurchaseAmount() {
-      return this._FindImage("*100 assets\purchase-amount.png")
+      return this._FindImage("*100 assets\purchase-amount.png", GRINDERS_PURCHASE_STATUS)
     }
 
     _FindExcubeAmount() {
-      return this._FindImage("*100 assets\excube-amount.png")
+      return this._FindImage("*100 assets\excube-amount.png", GRINDERS_PURCHASE_STATUS)
     }
 
     _FindConfirmationButton() {
-      return this._FindImage("*100 assets\confirmation-button.png")
+      return this._FindImage("*100 assets\confirmation-button.png", CONFIRMATION_BUTTON)
     }
 
     _FindCloseButton() {
-      return this._FindImage("*100 assets\close-button.png")
+      return this._FindImage("*100 assets\close-button.png", CLOSE_BUTTON)
     }
 
     _CheckExcubeAmountState() {
@@ -68,7 +65,7 @@ class GrindersBuyer {
     ; Actual execution
     ;
     _EnterShop() {
-      menu := this._FindImage("*100 assets\shop-menu.png")
+      menu := this._FindImage("*100 assets\shop-menu.png", SHOP_BUTTON_STATUS)
 
       if (not menu["exists"]) {
         return menu["error"]
@@ -155,7 +152,7 @@ class GrindersBuyer {
 
     ; Utils
     ;
-    _FindImage(image) {
+    _FindImage(image, reason) {
       foundX := 0
       foundY := 0
       found := 0
@@ -165,12 +162,12 @@ class GrindersBuyer {
       while(not found && attempt <= 3) {
         found := this._KeepTrying(&foundX, &foundY, image)
         this._ShortRandomSleep()
-        Debugger.Log("Attempt number: `n" attempt)
+        Debugger.Log("Attempt number: " attempt)
         attempt++
       }
 
       if (attempt > 3) {
-        error := BreakMessage(IMAGE_SEARCH, "Cannot find image. Reason: Timed out")
+        error := BreakMessage(IMAGE_SEARCH, "Cannot find image. Reason: " reason)
       }
 
       return Map(
